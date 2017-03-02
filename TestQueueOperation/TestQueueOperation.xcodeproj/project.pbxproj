@@ -223,6 +223,7 @@
 		6DADF69B1E66A9F700561A83 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = NO;
 				DEVELOPMENT_TEAM = YDEVQQ22JR;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -231,6 +232,7 @@
 		6DADF69C1E66A9F700561A83 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = NO;
 				DEVELOPMENT_TEAM = YDEVQQ22JR;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -255,6 +257,7 @@
 				6DADF69C1E66A9F700561A83 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

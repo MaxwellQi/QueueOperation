@@ -12,8 +12,8 @@
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
         MessageProcess *messageProcess = [[MessageProcess alloc] init];
-        [messageProcess initMessage];
-        [messageProcess readMessage];
+        [messageProcess initTimer];
+        [messageProcess release];
     }
     return 0;
 }

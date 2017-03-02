@@ -38,7 +38,8 @@ public:
     ProcessingQueue();
     ~ProcessingQueue();
     void InitQueue(MessageFreeQueue *freeQueue,MessageWorkQueue *workQueue);
-    void EnQueue(MessageFreeQueue *freeQueue,MessageWorkQueue *workQueue,const char* data,int len);
+    void EnWorkQueue(MessageWorkQueue *workQueue,MessageNode *node);
+    void EnQueue(MessageFreeQueue *freeQueue,MessageWorkQueue *workQueue,MessageNode *node);
     MessageNode* DeQueue(MessageFreeQueue *freeQueue,MessageWorkQueue *workQueue);
     MessageNode* GetNode(MessageFreeQueue *freeQueue,MessageWorkQueue *workQueue);
     void FreeNode(MessageNode *node);
@@ -53,7 +54,6 @@ private:
 
 @interface MessageProcess : NSObject
 
-- (void)initMessage;
-- (void)readMessage;
+- (void)initTimer;
 
 @end

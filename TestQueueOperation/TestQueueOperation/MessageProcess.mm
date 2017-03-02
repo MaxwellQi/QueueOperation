@@ -9,12 +9,19 @@
 #import "MessageProcess.h"
 #include <iostream>
 #include <string.h>
+const int defaultFreeQueueSize = 20;
 
 ProcessingQueue::ProcessingQueue()
 {
     m_messageFreeQueue = (MessageFreeQueue *)malloc(sizeof(struct MessageFreeQueue));
     m_messageWorkQueue = (MessageWorkQueue *)malloc(sizeof(struct MessageWorkQueue));
     InitQueue(m_messageFreeQueue, m_messageWorkQueue);
+    
+    for (int i = 0; i < defaultFreeQueueSize; i++) {
+        MessageNode* node = (MessageNode *)malloc(sizeof(MessageNode));
+        this->EnQueue(m_messageFreeQueue, NULL,node);
+    }
+    
     pthread_mutex_init(&queue_mutex,NULL);
 }
 
@@ -31,12 +38,8 @@ void ProcessingQueue::InitQueue(MessageFreeQueue *freeQueue,MessageWorkQueue *wo
     workQueue->rear = NULL;
 }
 
-void ProcessingQueue::EnQueue(MessageFreeQueue *freeQueue,MessageWorkQueue *workQueue,const char* data,int len)
+void ProcessingQueue::EnQueue(MessageFreeQueue *freeQueue,MessageWorkQueue *workQueue,MessageNode *node)
 {
-    MessageNode* node = (MessageNode *)malloc(sizeof(MessageNode));
-    node->data = (char *)malloc(len+1);
-    memcpy(node->data, data, len);
-    node->data[len] = 0;
     node->next = NULL;
      pthread_mutex_lock(&queue_mutex);
     if (freeQueue != NULL) {
@@ -158,34 +161,51 @@ int ProcessingQueue::GetQueueSize(MessageFreeQueue *freeQueue,MessageWorkQueue *
     return self;
 }
 
-- (void)initMessage
+- (void)initTimer
 {
-    const char* message01 = [@"Hello world 111" UTF8String];
-    ;
-    const char* message02 = [@"Hello world 222"  UTF8String];
-    const char* message03 = [@"Hello world 333"  UTF8String];
-    const char* message04 = [@"Hello world 444"  UTF8String];
-    const char* message05 = [@"Hello world 555"  UTF8String];
-    _processingQueue->EnQueue(_processingQueue->m_messageFreeQueue, NULL, message01, (int)strlen(message01));
-     _processingQueue->EnQueue(_processingQueue->m_messageFreeQueue, NULL, message02, (int)strlen(message02));
-     _processingQueue->EnQueue(_processingQueue->m_messageFreeQueue, NULL, message03, (int)strlen(message03));
-     _processingQueue->EnQueue(_processingQueue->m_messageFreeQueue, NULL, message04, (int)strlen(message04));
-     _processingQueue->EnQueue(_processingQueue->m_messageFreeQueue, NULL, message05, (int)strlen(message05));
+//    [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(processingMessageFreeQueue) userInfo:nil repeats:YES];
+//    [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(processingMessageWorkQueue) userInfo:nil repeats:YES];
+    [self processingMessageFreeQueue];
+    [self processingMessageWorkQueue];
 }
 
-- (void)readMessage
+- (void)processingMessageFreeQueue
 {
+    NSLog(@"%s",__func__);
+    
     while (true) {
-        if (_processingQueue->GetQueueSize(_processingQueue->m_messageFreeQueue, NULL) == 0) {
+        int freeQueueSize = _processingQueue->GetQueueSize(_processingQueue->m_messageFreeQueue, NULL);
+        if (freeQueueSize == 0) {
             return;
         }
-        MessageNode *messageNode = _processingQueue->DeQueue(_processingQueue->m_messageFreeQueue, NULL);
+        int randomNum = arc4random() % 100;
+        NSString *message = [NSString stringWithFormat:@"Hello workd---%d",randomNum];
+        MessageNode *node = _processingQueue->DeQueue(_processingQueue->m_messageFreeQueue, NULL);
+        const char* c_message = [message UTF8String];
+        int len = (int)strlen(c_message);
+        node->data = (char *)malloc(len +1);
+        memcpy(node->data, c_message, len);
+        node->data[len] = 0;
+        NSLog(@"input: %@",message);
+        _processingQueue->EnQueue(NULL,_processingQueue->m_messageWorkQueue, node);
+    }
+}
+
+- (void)processingMessageWorkQueue
+{
+    NSLog(@"%s",__func__);
+    
+    while (true) {
+        int workQueueSize = _processingQueue->GetQueueSize(NULL,_processingQueue->m_messageWorkQueue);
+        if (workQueueSize == 0) {
+            return;
+        }
+        MessageNode *messageNode = _processingQueue->DeQueue(NULL,_processingQueue->m_messageWorkQueue);
         if (messageNode->data != NULL) {
             NSLog(@"%@",[NSString stringWithUTF8String:messageNode->data]);
         }
-        
+        _processingQueue->EnQueue(_processingQueue->m_messageFreeQueue, NULL, messageNode);
     }
-
 }
 
 @end
